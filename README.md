@@ -446,19 +446,10 @@ The client needs to know the **server URL** at build time (baked into the static
 # Paste the server URL from Step 7:
 export SERVER_URL="https://clienthub-server-xxxx-zf.a.run.app"
 
-# Build & push client (takes 2-4 minutes):
-gcloud builds submit ./client \
-  --tag $REPO/client:v1 \
+# Build & push client via Cloud Build (takes 2-4 minutes):
+gcloud builds submit . \
+  --config cloudbuild.yaml \
   --substitutions=_VITE_API_BASE=$SERVER_URL
-```
-
-If the substitution arg doesn't work with your `cloudbuild.yaml`, use the alternative:
-```bash
-# Alternative: build the image directly with docker build-arg
-docker build ./client \
-  --build-arg VITE_API_BASE=$SERVER_URL \
-  -t $REPO/client:v1
-docker push $REPO/client:v1
 ```
 
 Now deploy the client — 🌐 **GCP CONSOLE (UI)**:
