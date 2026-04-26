@@ -4,13 +4,13 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { pool } from "./db/pool";
-import { runMigrations }         from "./db/runMigrations";
-import { companiesRouter }       from "./routes/companies";
-import { packagesRouter }        from "./routes/packages";
-import { promotionsRouter }      from "./routes/promotions";
-import { customersRouter }       from "./routes/customers";
+import { runMigrations } from "./db/runMigrations";
+import { companiesRouter } from "./routes/companies";
+import { packagesRouter } from "./routes/packages";
+import { promotionsRouter } from "./routes/promotions";
+import { customersRouter } from "./routes/customers";
 import { customerPackagesRouter } from "./routes/customerPackages";
-import { statsRouter }           from "./routes/stats";
+import { statsRouter } from "./routes/stats";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 8080);
@@ -29,25 +29,22 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-app.use("/api/companies",        companiesRouter);
-app.use("/api/packages",         packagesRouter);
-app.use("/api/promotions",       promotionsRouter);
-app.use("/api/customers",        customersRouter);
+app.use("/api/companies", companiesRouter);
+app.use("/api/packages", packagesRouter);
+app.use("/api/promotions", promotionsRouter);
+app.use("/api/customers", customersRouter);
 app.use("/api/customer-packages", customerPackagesRouter);
-app.use("/api/stats",            statsRouter);
+app.use("/api/stats", statsRouter);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
   res.status(500).json({ error: "Internal server error", message: err.message });
 });
 
-runMigrations()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`CRM server listening on :${PORT}`);
-    });
-  })
-  .catch((err: Error) => {
-    console.error("[DB] Migration failed, server will not start:", err.message);
-    process.exit(1);
-  });
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`CRM server listening on :${PORT}`);
+});
+
+void runMigrations().catch((err: Error) => {
+  console.error("[DB] Migration failed after server startup:", err.message);
+});

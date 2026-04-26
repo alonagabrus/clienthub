@@ -1,7 +1,8 @@
 const BASE = (import.meta.env.VITE_API_BASE ?? "") as string;
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const url = `${BASE}${path}`;
+  const res = await fetch(url, {
     headers: { "Content-Type": "application/json" },
     ...init,
   });
@@ -10,6 +11,15 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`${res.status}: ${text}`);
   }
   if (res.status === 204) return undefined as T;
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    const bodyPreview = (await res.text()).slice(0, 200);
+    throw new Error(
+      `Expected JSON response but got "${contentType || "unknown"}" from ${url}. Body starts with: ${bodyPreview}`
+    );
+  }
+
   return res.json() as Promise<T>;
 }
 
